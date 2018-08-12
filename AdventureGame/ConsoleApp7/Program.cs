@@ -135,6 +135,7 @@ _____----- |     ]              [ ||||||| ]              [     |
                     Console.WriteLine("You can't walk that way you idiot! The wall is solid stone!");
                     //return to top of loop, avoid doing anymore logic
                     continue;
+                }
 
 
                     // HANDLE THE DIFFERENT COMMANDS RECEIVED0
@@ -191,7 +192,7 @@ _____----- |     ]              [ ||||||| ]              [     |
 
 
 
-                }
+                
 
                 Console.ReadKey();
             }
