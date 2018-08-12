@@ -92,17 +92,13 @@ _____----- |     ]              [ ||||||| ]              [     |
             {
                 // first lets get the room at the current player location 
                 int room = gameMap[playerLocation.Y, playerLocation.X];
-
                 // Get the descrition of the room 
-
                 string description = GetRoomDescription(room);
 
 
 
                 Console.WriteLine(description);
-
                 // if player reached end room exit
-
                 if (room == 4)
                 {
                     Console.WriteLine();
@@ -120,82 +116,47 @@ _____----- |     ]              [ ||||||| ]              [     |
                 string command = Console.ReadLine();
                 CommandTypes commandType = ParseCommandLine(command);
 
+                playerLocation = UpdatePlayerLocation(commandType, playerLocation);
 
-                // ---- CHECK THE BOUNDARIES SO THE PLAYER DOESNT WALK OFF THE MAP..
-                // check if x is o (about to go negative and crash) or check if x is at he upper end of the x part of the array
-                if (playerLocation.X == 0 || playerLocation.X == gameMap.GetUpperBound(1))
+                playerLocation = CheckBoundaries(playerLocation, gameMap.GetUpperBound(1), gameMap.GetUpperBound(0));
+
+
+
+
+                if (commandType == CommandTypes.KILL_SELF)
                 {
-                    Console.WriteLine("You can't walk that way you idiot! The wall is solid stone!");
-                    //return to top of loop, avoid doing anymore logic
-                    continue;
+                    Console.WriteLine("Finding no way out, you say goodbye to this cruel world.");
+                    Console.WriteLine("Game Over");
+                    gameRunning = false;
+
                 }
-                // chekc y on both ends 
-                if (playerLocation.Y == 0 || playerLocation.X == gameMap.GetUpperBound(1))
+                else if (commandType == CommandTypes.NOT_FOUND)
                 {
-                    Console.WriteLine("You can't walk that way you idiot! The wall is solid stone!");
-                    //return to top of loop, avoid doing anymore logic
-                    continue;
+                    Console.WriteLine("I did not understand your command!");
+                    Console.WriteLine("Commands are: WALK LEFT, WALK RIGHT, WALK FORWARD, WALK BACK, LOOK, KILL SELF, TAKE ITEM");
+                }
+                else if (commandType == CommandTypes.LOOK)
+                {
+                    // first get item location from our ItemMap
+                    int itemId = itemMap[playerLocation.Y, playerLocation.X];
+                    // get desc of item
+                    string itemDesc = GetItemDescription(itemId);
+                    // print out the item desc
+                    Console.WriteLine(itemDesc);
+                }
+                else if (commandType == CommandTypes.TAKE_ITEM)
+                {
+                    int itemId = itemMap[playerLocation.Y, playerLocation.X];
+                    string takeItem = GetItem(itemId);
+                    Console.WriteLine(takeItem);
                 }
 
 
-                    // HANDLE THE DIFFERENT COMMANDS RECEIVED0
-                    //Process any commands the player typed 
-
-                    if (commandType == CommandTypes.WALK_LEFT)
-                    {
-                        //Console.WriteLine("You requested walk left");
-                        playerLocation.X--;
-                    }
-                    if (commandType == CommandTypes.WALK_RIGHT)
-                    {
-                        playerLocation.X++;
-                    }
-                    if (commandType == CommandTypes.WALK_FORWARD)
-                    {
-                        playerLocation.Y--;
-                    }
-                    if (commandType == CommandTypes.WALK_BACK)
-                    {
-                        playerLocation.Y++;
-                    }
-
-                    else if (commandType == CommandTypes.KILL_SELF)
-                    {
-                        Console.WriteLine("Finding no way out, you say goodbye to this cruel world.");
-                        Console.WriteLine("Game Over");
-                        gameRunning = false;
-
-                    }
 
 
 
-                    else if (commandType == CommandTypes.NOT_FOUND)
-                    {
-                        Console.WriteLine("I did not understand your command!");
-                        Console.WriteLine("Commands are: WALK LEFT, WALK RIGHT, WALK FORWARD, WALK BACK, LOOK, KILL SELF, TAKE ITEM");
-                    }
-                    else if (commandType == CommandTypes.LOOK)
-                    {
-                        // first get item location from our ItemMap
-                        int itemId = itemMap[playerLocation.Y, playerLocation.X];
-                        // get desc of item
-                        string itemDesc = GetItemDescription(itemId);
-                        // print out the item desc
-                        Console.WriteLine(itemDesc);
-                    }
-                    else if (commandType == CommandTypes.TAKE_ITEM)
-                    {
-                        int itemId = itemMap[playerLocation.Y, playerLocation.X];
-                        string takeItem = GetItem(itemId);
-                        Console.WriteLine(takeItem);
-                    }
-
-
-
-                
-
-                Console.ReadKey();
             }
+            Console.ReadLine();
         }
 
         // commands use in the game 
@@ -282,7 +243,7 @@ _____----- |     ]              [ ||||||| ]              [     |
             }
             else if (roomNo == 0)
             {
-                msg = "You walked into a walk!";
+                msg = "You walked into a wall!";
             }
             else
             {
@@ -329,12 +290,77 @@ _____----- |     ]              [ ||||||| ]              [     |
             return takeItem;
 
         }
-        
-        
 
-        
-        
-        
+        static Location UpdatePlayerLocation(CommandTypes commandType, Location currentLocation)
+        {
+
+            // HANDLE THE DIFFERENT COMMANDS RECEIVED0
+            //Process any commands the player typed 
+
+            if (commandType == CommandTypes.WALK_LEFT)
+            {
+                //Console.WriteLine("You requested walk left");
+                currentLocation.X--;
+            }
+            if (commandType == CommandTypes.WALK_RIGHT)
+            {
+                currentLocation.X++;
+            }
+            if (commandType == CommandTypes.WALK_FORWARD)
+            {
+                currentLocation.Y--;
+            }
+            if (commandType == CommandTypes.WALK_BACK)
+            {
+                currentLocation.Y++;
+            }
+
+            return currentLocation;
+        }
+
+
+
+        static Location CheckBoundaries(Location currentLocation, int xMax, int yMax)
+        {
+
+
+            // ---- CHECK THE BOUNDARIES SO THE PLAYER DOESNT WALK OFF THE MAP..
+            // check if x is o (about to go negative and crash) or check if x is at he upper end of the x part of the array
+            if (currentLocation.X < 0)
+            {
+
+                Console.WriteLine("You can't walk that way you idiot! The wall is solid stone!");
+                currentLocation.X++;
+
+
+            }
+
+            //compare player location against the upper most allowed X value 
+            if (currentLocation.X > xMax)
+            {
+                Console.WriteLine("You can't walk that way you idiot! The wall is solid stone!");
+                currentLocation.X--;
+            }
+            //CHECK Y BOUNDARIES
+            if (currentLocation.Y < 0)
+            {
+
+                Console.WriteLine("You can't walk that way you idiot! The wall is solid stone!");
+                currentLocation.Y++;
+
+
+            }
+            if (currentLocation.Y > xMax)
+            {
+                Console.WriteLine("You can't walk that way you idiot! The wall is solid stone!");
+                currentLocation.Y--;
+            }
+            return currentLocation;
+        }
+
+
+
+
 
         class Monster
 
@@ -342,25 +368,25 @@ _____----- |     ]              [ ||||||| ]              [     |
             public string monsterType;
             public int monsterHealth = 20;
             public int monsterDamage = 1;
-            
+
         }
 
 
-		class Location
-		{
-			public int X;
-			public int Y;
+        class Location
+        {
+            public int X;
+            public int Y;
 
-		}
+        }
 
-		class GameItem
-		{
-			public string Name;
-			public int Uses;
-			public int Damage;
+        class GameItem
+        {
+            public string Name;
+            public int Uses;
+            public int Damage;
 
-		}
-	}
+        }
+    }
 
 
 }
